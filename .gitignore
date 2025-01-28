@@ -1,14 +1,24 @@
-# Flower files
+# Flower
 .flower_ops
 data/
-doc/source/api_documentation
-doc/source/_build
+framework/docs/source/api_documentation
+framework/docs/source/_build
+framework/docs/source/dataset/
 flwr_logs
 .cache
 
-# Datasets
-cifar-10-python.tar.gz
-cifar-10-batches-py
+# Node.js
+node_modules
+
+# Flower Examples
+examples/**/dataset/**
+#examples/**/dev/*.sh
+
+# Flower Baselines
+baselines/datasets/leaf
+
+# Exclude ee package
+src/py/flwr/ee
 
 # macOS
 .DS_Store
@@ -44,6 +54,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+.srl
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -155,8 +166,26 @@ dmypy.json
 poetry.lock
 *.pkl
 
-# Examples
-examples/**/dataset/**
+# iOS
+xcuserdata/
 
-# Datasets
-baselines/datasets/leaf
+# Android
+.gradle
+.idea
+local.properties
+app/src/main/assets
+/build
+*.iml
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/captures
+.externalNativeBuild
+.cxx
+
+# Pyright
+pyrightconfig.json

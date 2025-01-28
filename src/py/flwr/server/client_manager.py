@@ -1,4 +1,4 @@
-# Copyright 2020 Adap GmbH. All Rights Reserved.
+# Copyright 2020 Flower Labs GmbH. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import random
 import threading
 from abc import ABC, abstractmethod
 from logging import INFO
-from typing import Dict, List, Optional
+from typing import Optional
 
 from flwr.common.logger import log
 
@@ -32,22 +32,44 @@ class ClientManager(ABC):
 
     @abstractmethod
     def num_available(self) -> int:
-        """Return the number of available clients."""
+        """Return the number of available clients.
+
+        Returns
+        -------
+        num_available : int
+            The number of currently available clients.
+        """
 
     @abstractmethod
     def register(self, client: ClientProxy) -> bool:
         """Register Flower ClientProxy instance.
 
-        Returns:
-            bool: Indicating if registration was successful
+        Parameters
+        ----------
+        client : flwr.server.client_proxy.ClientProxy
+            The ClientProxy of the Client to register.
+
+        Returns
+        -------
+        success : bool
+            Indicating if registration was successful. False if ClientProxy is
+            already registered or can not be registered for any reason.
         """
 
     @abstractmethod
     def unregister(self, client: ClientProxy) -> None:
-        """Unregister Flower ClientProxy instance."""
+        """Unregister Flower ClientProxy instance.
+
+        This method is idempotent.
+
+        Parameters
+        ----------
+        client : flwr.server.client_proxy.ClientProxy
+            The ClientProxy of the Client to unregister.
+        """
 
     @abstractmethod
-    def all(self) -> Dict[str, ClientProxy]:
+    def all(self) -> dict[str, ClientProxy]:
         """Return all available clients."""
 
     @abstractmethod
@@ -60,7 +82,7 @@ class ClientManager(ABC):
         num_clients: int,
         min_num_clients: Optional[int] = None,
         criterion: Optional[Criterion] = None,
-    ) -> List[ClientProxy]:
+    ) -> list[ClientProxy]:
         """Sample a number of Flower ClientProxy instances."""
 
 
@@ -68,33 +90,63 @@ class SimpleClientManager(ClientManager):
     """Provides a pool of available clients."""
 
     def __init__(self) -> None:
-        self.clients: Dict[str, ClientProxy] = {}
+        self.clients: dict[str, ClientProxy] = {}
         self._cv = threading.Condition()
 
     def __len__(self) -> int:
+        """Return the number of available clients.
+
+        Returns
+        -------
+        num_available : int
+            The number of currently available clients.
+        """
         return len(self.clients)
 
-    def wait_for(self, num_clients: int, timeout: int = 86400) -> bool:
-        """Block until at least `num_clients` are available or until a timeout
-        is reached.
+    def num_available(self) -> int:
+        """Return the number of available clients.
 
-        Current timeout default: 1 day.
+        Returns
+        -------
+        num_available : int
+            The number of currently available clients.
+        """
+        return len(self)
+
+    def wait_for(self, num_clients: int, timeout: int = 86400) -> bool:
+        """Wait until at least `num_clients` are available.
+
+        Blocks until the requested number of clients is available or until a
+        timeout is reached. Current timeout default: 1 day.
+
+        Parameters
+        ----------
+        num_clients : int
+            The number of clients to wait for.
+        timeout : int
+            The time in seconds to wait for, defaults to 86400 (24h).
+
+        Returns
+        -------
+        success : bool
         """
         with self._cv:
             return self._cv.wait_for(
                 lambda: len(self.clients) >= num_clients, timeout=timeout
             )
 
-    def num_available(self) -> int:
-        """Return the number of available clients."""
-        return len(self)
-
     def register(self, client: ClientProxy) -> bool:
         """Register Flower ClientProxy instance.
 
-        Returns:
-            bool: Indicating if registration was successful. False if ClientProxy is
-                already registered or can not be registered for any reason
+        Parameters
+        ----------
+        client : flwr.server.client_proxy.ClientProxy
+
+        Returns
+        -------
+        success : bool
+            Indicating if registration was successful. False if ClientProxy is
+            already registered or can not be registered for any reason.
         """
         if client.cid in self.clients:
             return False
@@ -109,6 +161,10 @@ class SimpleClientManager(ClientManager):
         """Unregister Flower ClientProxy instance.
 
         This method is idempotent.
+
+        Parameters
+        ----------
+        client : flwr.server.client_proxy.ClientProxy
         """
         if client.cid in self.clients:
             del self.clients[client.cid]
@@ -116,7 +172,7 @@ class SimpleClientManager(ClientManager):
             with self._cv:
                 self._cv.notify_all()
 
-    def all(self) -> Dict[str, ClientProxy]:
+    def all(self) -> dict[str, ClientProxy]:
         """Return all available clients."""
         return self.clients
 
@@ -125,7 +181,7 @@ class SimpleClientManager(ClientManager):
         num_clients: int,
         min_num_clients: Optional[int] = None,
         criterion: Optional[Criterion] = None,
-    ) -> List[ClientProxy]:
+    ) -> list[ClientProxy]:
         """Sample a number of Flower ClientProxy instances."""
         # Block until at least num_clients are connected.
         if min_num_clients is None:

@@ -1,4 +1,4 @@
-# Copyright 2020 Adap GmbH. All Rights Reserved.
+# Copyright 2020 Flower Labs GmbH. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,8 +25,7 @@ from .parameter import bytes_to_ndarray, ndarray_to_bytes
 
 
 def test_serialisation_deserialisation() -> None:
-    """Test if after serialization/deserialisation the np.ndarray is
-    identical."""
+    """Test if the np.ndarray is identical after (de-)serialization."""
     arr = np.array([[1, 2], [3, 4], [5, 6]])
 
     arr_serialized = ndarray_to_bytes(arr)

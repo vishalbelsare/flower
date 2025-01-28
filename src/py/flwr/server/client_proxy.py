@@ -1,4 +1,4 @@
-# Copyright 2020 Adap GmbH. All Rights Reserved.
+# Copyright 2020 Flower Labs GmbH. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,21 +19,24 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 from flwr.common import (
-    Disconnect,
+    DisconnectRes,
     EvaluateIns,
     EvaluateRes,
     FitIns,
     FitRes,
-    ParametersRes,
+    GetParametersIns,
+    GetParametersRes,
+    GetPropertiesIns,
+    GetPropertiesRes,
     Properties,
-    PropertiesIns,
-    PropertiesRes,
-    Reconnect,
+    ReconnectIns,
 )
 
 
 class ClientProxy(ABC):
     """Abstract base class for Flower client proxies."""
+
+    node_id: int
 
     def __init__(self, cid: str):
         self.cid = cid
@@ -42,16 +45,19 @@ class ClientProxy(ABC):
     @abstractmethod
     def get_properties(
         self,
-        ins: PropertiesIns,
+        ins: GetPropertiesIns,
         timeout: Optional[float],
-    ) -> PropertiesRes:
-        """Returns the client's properties."""
+        group_id: Optional[int],
+    ) -> GetPropertiesRes:
+        """Return the client's properties."""
 
     @abstractmethod
     def get_parameters(
         self,
+        ins: GetParametersIns,
         timeout: Optional[float],
-    ) -> ParametersRes:
+        group_id: Optional[int],
+    ) -> GetParametersRes:
         """Return the current local model parameters."""
 
     @abstractmethod
@@ -59,21 +65,24 @@ class ClientProxy(ABC):
         self,
         ins: FitIns,
         timeout: Optional[float],
+        group_id: Optional[int],
     ) -> FitRes:
-        """Refine the provided weights using the locally held dataset."""
+        """Refine the provided parameters using the locally held dataset."""
 
     @abstractmethod
     def evaluate(
         self,
         ins: EvaluateIns,
         timeout: Optional[float],
+        group_id: Optional[int],
     ) -> EvaluateRes:
-        """Evaluate the provided weights using the locally held dataset."""
+        """Evaluate the provided parameters using the locally held dataset."""
 
     @abstractmethod
     def reconnect(
         self,
-        reconnect: Reconnect,
+        ins: ReconnectIns,
         timeout: Optional[float],
-    ) -> Disconnect:
+        group_id: Optional[int],
+    ) -> DisconnectRes:
         """Disconnect and (optionally) reconnect later."""

@@ -15,14 +15,14 @@
 #pragma once
 #include "typing.h"
 
-namespace flwr {
+namespace flwr_local {
 /**
  *
  * Abstract base class for C++ Flower clients
  *
  */
 class Client {
- public:
+public:
   /**
    *
    * @brief Return the current local model parameters
@@ -60,4 +60,4 @@ class Client {
    */
   virtual EvaluateRes evaluate(EvaluateIns ins) = 0;
 };
-}  // namespace flwr
+} // namespace flwr_local

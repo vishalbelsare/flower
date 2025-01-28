@@ -1,4 +1,4 @@
-# Copyright 2020 Adap GmbH. All Rights Reserved.
+# Copyright 2022 Flower Labs GmbH. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,56 +15,43 @@
 """Flower NumPyClient tests."""
 
 
-from typing import Dict, List, Tuple
+from flwr.common import Config, NDArrays, Properties, Scalar
 
-import numpy as np
-
-from flwr.common import Config, Properties, Scalar
-
-from .numpy_client import NumPyClient, has_get_properties
+from .numpy_client import (
+    NumPyClient,
+    has_evaluate,
+    has_fit,
+    has_get_parameters,
+    has_get_properties,
+)
 
 
 class OverridingClient(NumPyClient):
     """Client overriding `get_properties`."""
 
     def get_properties(self, config: Config) -> Properties:
-        return Properties()
+        """Get empty properties of the client."""
+        return {}
 
-    def get_parameters(self) -> List[np.ndarray]:
-        # This method is not expected to be called
-        raise Exception()
+    def get_parameters(self, config: Config) -> NDArrays:
+        """Get empty parameters of the client."""
+        return []
 
     def fit(
-        self, parameters: List[np.ndarray], config: Dict[str, Scalar]
-    ) -> Tuple[List[np.ndarray], int, Dict[str, Scalar]]:
-        # This method is not expected to be called
-        raise Exception()
+        self, parameters: NDArrays, config: dict[str, Scalar]
+    ) -> tuple[NDArrays, int, dict[str, Scalar]]:
+        """Simulate training by returning empty weights, 0 samples, empty metrics."""
+        return [], 0, {}
 
     def evaluate(
-        self, parameters: List[np.ndarray], config: Dict[str, Scalar]
-    ) -> Tuple[float, int, Dict[str, Scalar]]:
-        # This method is not expected to be called
-        raise Exception()
+        self, parameters: NDArrays, config: dict[str, Scalar]
+    ) -> tuple[float, int, dict[str, Scalar]]:
+        """Simulate evaluate by returning 0.0 loss, 0 samples, empty metrics."""
+        return 0.0, 0, {}
 
 
 class NotOverridingClient(NumPyClient):
-    """Client not overriding `get_properties`."""
-
-    def get_parameters(self) -> List[np.ndarray]:
-        # This method is not expected to be called
-        raise Exception()
-
-    def fit(
-        self, parameters: List[np.ndarray], config: Dict[str, Scalar]
-    ) -> Tuple[List[np.ndarray], int, Dict[str, Scalar]]:
-        # This method is not expected to be called
-        raise Exception()
-
-    def evaluate(
-        self, parameters: List[np.ndarray], config: Dict[str, Scalar]
-    ) -> Tuple[float, int, Dict[str, Scalar]]:
-        # This method is not expected to be called
-        raise Exception()
+    """Client not overriding any NumPyClient method."""
 
 
 def test_has_get_properties_true() -> None:
@@ -88,6 +75,84 @@ def test_has_get_properties_false() -> None:
 
     # Execute
     actual = has_get_properties(client=client)
+
+    # Assert
+    assert actual == expected
+
+
+def test_has_get_parameters_true() -> None:
+    """Test fit_clients."""
+    # Prepare
+    client = OverridingClient()
+    expected = True
+
+    # Execute
+    actual = has_get_parameters(client=client)
+
+    # Assert
+    assert actual == expected
+
+
+def test_has_get_parameters_false() -> None:
+    """Test fit_clients."""
+    # Prepare
+    client = NotOverridingClient()
+    expected = False
+
+    # Execute
+    actual = has_get_parameters(client=client)
+
+    # Assert
+    assert actual == expected
+
+
+def test_has_fit_true() -> None:
+    """Test fit_clients."""
+    # Prepare
+    client = OverridingClient()
+    expected = True
+
+    # Execute
+    actual = has_fit(client=client)
+
+    # Assert
+    assert actual == expected
+
+
+def test_has_fit_false() -> None:
+    """Test fit_clients."""
+    # Prepare
+    client = NotOverridingClient()
+    expected = False
+
+    # Execute
+    actual = has_fit(client=client)
+
+    # Assert
+    assert actual == expected
+
+
+def test_has_evaluate_true() -> None:
+    """Test fit_clients."""
+    # Prepare
+    client = OverridingClient()
+    expected = True
+
+    # Execute
+    actual = has_evaluate(client=client)
+
+    # Assert
+    assert actual == expected
+
+
+def test_has_evaluate_false() -> None:
+    """Test fit_clients."""
+    # Prepare
+    client = NotOverridingClient()
+    expected = False
+
+    # Execute
+    actual = has_evaluate(client=client)
 
     # Assert
     assert actual == expected
