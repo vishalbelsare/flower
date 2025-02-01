@@ -1,19 +1,37 @@
 [build-system]
-requires = [
-    "poetry==1.1.13",
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "opacus_fl"
+version = "1.0.0"
+description = "Sample-level Differential Privacy with Opacus in Flower"
+
+dependencies = [
+    "flwr[simulation]>=1.15.0",
+    "flwr-datasets[vision]>=0.5.0",
+    "torch==2.5.1",
+    "torchvision==0.20.1",
+    "opacus==v1.4.1",
 ]
-build-backend = "poetry.core.masonry.api"
 
-[tool.poetry]
-name = "flwr_opacus"
-version = "0.1.0"
-description = "Differentially Private Federated Learning with Opacus and Flower"
-authors = ["The Flower Authors <enquiries@flower.dev>"]
+[tool.hatch.build.targets.wheel]
+packages = ["."]
 
-[tool.poetry.dependencies]
-python = "^3.8"
-flwr = "^0.17.0"
-# flwr = { path = "../../", develop = true }  # Development
-opacus = "~0.14.0"
-torch = "~1.7.0"
-torchvision = "~0.8.0"
+[tool.flwr.app]
+publisher = "flwrlabs"
+
+[tool.flwr.app.components]
+serverapp = "opacus_fl.server_app:app"
+clientapp = "opacus_fl.client_app:app"
+
+[tool.flwr.app.config]
+num-server-rounds = 3
+target-delta = 1e-5
+max-grad-norm = 1.0
+
+[tool.flwr.federations]
+default = "local-simulation"
+
+[tool.flwr.federations.local-simulation]
+options.num-supernodes = 2

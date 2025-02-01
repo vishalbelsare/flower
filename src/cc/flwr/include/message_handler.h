@@ -15,25 +15,9 @@
 #pragma once
 #include "client.h"
 #include "serde.h"
-using flower::transport::ClientMessage;
-using flower::transport::ClientMessage_Disconnect;
-using flower::transport::ClientMessage_EvaluateRes;
-using flower::transport::ClientMessage_FitRes;
-using flower::transport::Reason;
-using flower::transport::ServerMessage;
-using flower::transport::ServerMessage_EvaluateIns;
-using flower::transport::ServerMessage_FitIns;
-using flower::transport::ServerMessage_Reconnect;
 
-std::tuple<ClientMessage, int> _reconnect(
-    ServerMessage_Reconnect reconnect_msg);
+std::tuple<flwr::proto::ClientMessage, int, bool>
+handle(flwr_local::Client *client, flwr::proto::ServerMessage server_msg);
 
-ClientMessage _get_parameters(flwr::Client* client);
-
-ClientMessage _fit(flwr::Client* client, ServerMessage_FitIns fit_msg);
-
-ClientMessage _evaluate(flwr::Client* client,
-                        ServerMessage_EvaluateIns evaluate_msg);
-
-std::tuple<ClientMessage, int, bool> handle(flwr::Client* client,
-                                            ServerMessage server_msg);
+std::tuple<flwr::proto::TaskRes, int, bool>
+handle_task(flwr_local::Client *client, const flwr::proto::TaskIns &task_ins);
